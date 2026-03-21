@@ -1,0 +1,1835 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>VacațiaApp ✈️</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f8fafc; font-family: 'Segoe UI', sans-serif; }
+  input, select, textarea, button { font-family: inherit; }
+</style>
+</head>
+<body>
+<div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#6366f1;font-size:18px">✈️ Se încarcă...</div></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/recharts@2.12.0/umd/Recharts.js" crossorigin></script>
+<script>
+window.addEventListener('load', function() {
+(() => {
+  const { useState, useEffect, useRef, useCallback, createContext, useContext } = React;
+  const { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } = Recharts;
+  const TRANSLATIONS = {
+    ro: {
+      // Setup
+      planYourVacation: "Planific\u0103 vacan\u021Ba ta",
+      setupSub: "Completeaz\u0103 detaliile pentru a \xEEncepe s\u0103 \xEE\u021Bi urm\u0103re\u0219ti cheltuielile",
+      destination: "Destina\u021Bie",
+      destinationPlaceholder: "ex: Paris, Tokyo, Maldive...",
+      departureDate: "Data plecare",
+      returnDate: "Data \xEEntoarcere",
+      totalBudget: "Buget total (\u20AC)",
+      startVacation: "\u{1F680} \xCEncepe vacan\u021Ba",
+      required: "*",
+      // Header
+      budget: "Buget",
+      editVacation: "Editeaz\u0103 vacan\u021Ba",
+      // Budget bar
+      spent: "Cheltuit",
+      remaining: "R\u0103mas",
+      exceeded: "dep\u0103\u0219it!",
+      pressEnter: "\u20AC \u2014 apas\u0103 Enter",
+      // Tabs
+      expenses: "\u{1F4B3} Cheltuieli",
+      planning: "\u{1F4C5} Planning",
+      statistics: "\u{1F4CA} Statistici",
+      // Expenses tab
+      add: "+ Adaug\u0103",
+      voice: "\u{1F399}\uFE0F Voce",
+      listening: "\u{1F534} Ascult...",
+      processing: "\u{1F916} Procesez...",
+      allCategories: "Toate categoriile",
+      filteredTotal: "Total filtrat:",
+      noExpenses: "Nicio cheltuial\u0103 \xEEnregistrat\u0103",
+      // Form
+      newExpense: "Cheltuial\u0103 nou\u0103",
+      edit: "Editeaz\u0103",
+      amount: "Suma",
+      currency: "Moned\u0103",
+      date: "Data",
+      paymentMethod: "Metod\u0103 plat\u0103",
+      description: "Descriere",
+      descriptionPlaceholder: "Detalii op\u021Bionale...",
+      save: "\u{1F4BE} Salveaz\u0103",
+      approxEur: "\u2248 {amt} la cursul curent",
+      // Flight details
+      flightDetails: "\u2708\uFE0F Detalii Zbor",
+      from: "De la",
+      to: "La",
+      airline: "Companie",
+      flightNo: "Nr. zbor",
+      departureTime: "Ora plecare",
+      departureTerminal: "Terminal plecare",
+      arrivalTime: "Ora sosire",
+      arrivalTerminal: "Terminal sosire",
+      luggage: "Bagaje",
+      luggagePlaceholder: "ex: 1 bagaj cal\u0103 23kg + bagaj m\xE2n\u0103",
+      // Accommodation details
+      accommodationDetails: "\u{1F3E8} Detalii Cazare",
+      cityDestination: "Ora\u0219 / Destina\u021Bie",
+      cityPlaceholder: "ex: Valencia, Paris...",
+      accommodationType: "Tip cazare",
+      typeHotel: "\u{1F3E8} Hotel",
+      typeAirbnb: "\u{1F3E0} Airbnb / Apartament",
+      typeHostel: "\u{1F6CF}\uFE0F Hostel",
+      typeHomeExchange: "\u{1F504} HomeExchange",
+      typeFriends: "\u{1F465} La prieteni / familie",
+      typeCamping: "\u26FA Camping",
+      typeOther: "\u{1F4CD} Altele",
+      typeChoose: "\u2014 alege \u2014",
+      freeAccommodation: "\u{1F49A} Cazare gratuit\u0103 (HomeExchange, prieteni, etc.) \u2014 las\u0103 suma 0",
+      hotelName: "Nume hotel / gazd\u0103",
+      hotelNamePlaceholder: "ex: Hotel Westin, Casa Mariei...",
+      address: "Adres\u0103",
+      bookedVia: "Rezervat prin",
+      bookedViaPlaceholder: "Booking, Airbnb, HomeExchange, direct...",
+      checkInDate: "Check-in dat\u0103",
+      checkInTime: "Check-in or\u0103",
+      checkOutDate: "Check-out dat\u0103",
+      checkOutTime: "Check-out or\u0103",
+      // Car details
+      carDetails: "\u{1F697} Detalii Ma\u0219in\u0103",
+      company: "Companie",
+      pickupDate: "Pick-up dat\u0103",
+      pickupTime: "Pick-up or\u0103",
+      dropoffDate: "Drop-off dat\u0103",
+      dropoffTime: "Drop-off or\u0103",
+      // Edit vacation modal
+      editVacationTitle: "\u270F\uFE0F Editeaz\u0103 vacan\u021Ba",
+      deleteAll: "\u{1F5D1}\uFE0F \u0218terge tot \u0219i \xEEncepe o vacan\u021B\u0103 nou\u0103",
+      // Planning
+      days: "zile",
+      totalExpenses: "cheltuieli",
+      dayLabel: "Zi",
+      checkIn: "Check-in",
+      checkOut: "Check-out",
+      activeAccommodation: "Cazare",
+      carPickup: "Preluare ma\u0219in\u0103",
+      carDropoff: "Predare ma\u0219in\u0103",
+      rentalCar: "Ma\u0219in\u0103 \xEEnchiriat\u0103",
+      flight: "Zbor",
+      departure: "Plecare",
+      arrival: "Sosire",
+      terminal: "T",
+      free: "gratuit",
+      dailyTotal: "Total zi",
+      notesPlaceholder: "Traseu, obiective turistice, rezerv\u0103ri, idei...",
+      notesLabel: "\u{1F4DD} Program / Noti\u021Be",
+      planningEmpty: "Configureaz\u0103 datele vacan\u021Bei sau adaug\u0103 cheltuieli pentru a vedea planningul",
+      // Statistics
+      periodTotal: "Total perioad\u0103:",
+      noCharts: "Nu exist\u0103 date pentru grafice",
+      distributionTitle: "Distribu\u021Bie cheltuieli",
+      categoriesTitle: "Cheltuieli pe categorii (\u20AC)",
+      breakdownTitle: "Breakdown categorii",
+      atCurrentRate: "la cursul curent",
+      // Days
+      dayNames: ["Dum", "Lun", "Mar", "Mie", "Joi", "Vin", "S\xE2m"],
+      monthNames: ["Ian", "Feb", "Mar", "Apr", "Mai", "Iun", "Iul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+      // Categories
+      catAvion: "Avion",
+      catCazare: "Cazare",
+      catMasina: "Ma\u0219in\u0103",
+      catTransport: "Transport",
+      catRestaurant: "Restaurant",
+      catGroceries: "Groceries",
+      catCafea: "Cafea",
+      catShopping: "Shopping",
+      catActivitati: "Activit\u0103\u021Bi",
+      catMedic: "Medic",
+      catTaxe: "Taxe",
+      catDivertisment: "Divertisment",
+      trackerSub: "Tracker de cheltuieli",
+      departureLbl: "Plecare:",
+      voiceLangCode: "ro-RO",
+      friendsLabel: "La prieteni"
+    },
+    en: {
+      planYourVacation: "Plan your vacation",
+      setupSub: "Fill in the details to start tracking your expenses",
+      destination: "Destination",
+      destinationPlaceholder: "e.g. Paris, Tokyo, Maldives...",
+      departureDate: "Departure date",
+      returnDate: "Return date",
+      totalBudget: "Total budget (\u20AC)",
+      startVacation: "\u{1F680} Start vacation",
+      required: "*",
+      budget: "Budget",
+      editVacation: "Edit vacation",
+      spent: "Spent",
+      remaining: "Remaining",
+      exceeded: "over budget!",
+      pressEnter: "\u20AC \u2014 press Enter",
+      expenses: "\u{1F4B3} Expenses",
+      planning: "\u{1F4C5} Planning",
+      statistics: "\u{1F4CA} Statistics",
+      add: "+ Add",
+      voice: "\u{1F399}\uFE0F Voice",
+      listening: "\u{1F534} Listening...",
+      processing: "\u{1F916} Processing...",
+      allCategories: "All categories",
+      filteredTotal: "Filtered total:",
+      noExpenses: "No expenses recorded",
+      newExpense: "New expense",
+      edit: "Edit",
+      amount: "Amount",
+      currency: "Currency",
+      date: "Date",
+      paymentMethod: "Payment method",
+      description: "Description",
+      descriptionPlaceholder: "Optional details...",
+      save: "\u{1F4BE} Save",
+      approxEur: "\u2248 {amt} at current rate",
+      flightDetails: "\u2708\uFE0F Flight Details",
+      from: "From",
+      to: "To",
+      airline: "Airline",
+      flightNo: "Flight no.",
+      departureTime: "Departure time",
+      departureTerminal: "Departure terminal",
+      arrivalTime: "Arrival time",
+      arrivalTerminal: "Arrival terminal",
+      luggage: "Luggage",
+      luggagePlaceholder: "e.g. 1 checked bag 23kg + hand luggage",
+      accommodationDetails: "\u{1F3E8} Accommodation Details",
+      cityDestination: "City / Destination",
+      cityPlaceholder: "e.g. Valencia, Paris...",
+      accommodationType: "Accommodation type",
+      typeHotel: "\u{1F3E8} Hotel",
+      typeAirbnb: "\u{1F3E0} Airbnb / Apartment",
+      typeHostel: "\u{1F6CF}\uFE0F Hostel",
+      typeHomeExchange: "\u{1F504} HomeExchange",
+      typeFriends: "\u{1F465} Friends / family",
+      typeCamping: "\u26FA Camping",
+      typeOther: "\u{1F4CD} Other",
+      typeChoose: "\u2014 choose \u2014",
+      freeAccommodation: "\u{1F49A} Free accommodation (HomeExchange, friends, etc.) \u2014 leave amount at 0",
+      hotelName: "Hotel / host name",
+      hotelNamePlaceholder: "e.g. Westin Hotel, Maria's House...",
+      address: "Address",
+      bookedVia: "Booked via",
+      bookedViaPlaceholder: "Booking, Airbnb, HomeExchange, direct...",
+      checkInDate: "Check-in date",
+      checkInTime: "Check-in time",
+      checkOutDate: "Check-out date",
+      checkOutTime: "Check-out time",
+      carDetails: "\u{1F697} Car Details",
+      company: "Company",
+      pickupDate: "Pick-up date",
+      pickupTime: "Pick-up time",
+      dropoffDate: "Drop-off date",
+      dropoffTime: "Drop-off time",
+      editVacationTitle: "\u270F\uFE0F Edit vacation",
+      deleteAll: "\u{1F5D1}\uFE0F Delete all and start a new vacation",
+      days: "days",
+      totalExpenses: "expenses",
+      dayLabel: "Day",
+      checkIn: "Check-in",
+      checkOut: "Check-out",
+      activeAccommodation: "Accommodation",
+      carPickup: "Car pick-up",
+      carDropoff: "Car drop-off",
+      rentalCar: "Rental car",
+      flight: "Flight",
+      departure: "Departure",
+      arrival: "Arrival",
+      terminal: "T",
+      free: "free",
+      dailyTotal: "Day total",
+      notesPlaceholder: "Route, tourist attractions, reservations, ideas...",
+      notesLabel: "\u{1F4DD} Schedule / Notes",
+      planningEmpty: "Set up your vacation dates or add expenses to see the planning",
+      periodTotal: "Period total:",
+      noCharts: "No data available for charts",
+      distributionTitle: "Expense distribution",
+      categoriesTitle: "Expenses by category (\u20AC)",
+      breakdownTitle: "Category breakdown",
+      atCurrentRate: "at current rate",
+      dayNames: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      monthNames: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+      catAvion: "Flight",
+      catCazare: "Accommodation",
+      catMasina: "Car",
+      catTransport: "Transport",
+      catRestaurant: "Restaurant",
+      catGroceries: "Groceries",
+      catCafea: "Coffee",
+      catShopping: "Shopping",
+      catActivitati: "Activities",
+      catMedic: "Medical",
+      catTaxe: "Taxes",
+      catDivertisment: "Entertainment",
+      trackerSub: "Expense tracker",
+      departureLbl: "Departure:",
+      voiceLangCode: "en-US",
+      friendsLabel: "Friends"
+    },
+    es: {
+      planYourVacation: "Planifica tus vacaciones",
+      setupSub: "Completa los detalles para comenzar a registrar tus gastos",
+      destination: "Destino",
+      destinationPlaceholder: "ej: Par\xEDs, Tokio, Maldivas...",
+      departureDate: "Fecha de salida",
+      returnDate: "Fecha de regreso",
+      totalBudget: "Presupuesto total (\u20AC)",
+      startVacation: "\u{1F680} Comenzar vacaciones",
+      required: "*",
+      budget: "Presupuesto",
+      editVacation: "Editar vacaciones",
+      spent: "Gastado",
+      remaining: "Restante",
+      exceeded: "\xA1excedido!",
+      pressEnter: "\u20AC \u2014 pulsa Enter",
+      expenses: "\u{1F4B3} Gastos",
+      planning: "\u{1F4C5} Planning",
+      statistics: "\u{1F4CA} Estad\xEDsticas",
+      add: "+ A\xF1adir",
+      voice: "\u{1F399}\uFE0F Voz",
+      listening: "\u{1F534} Escuchando...",
+      processing: "\u{1F916} Procesando...",
+      allCategories: "Todas las categor\xEDas",
+      filteredTotal: "Total filtrado:",
+      noExpenses: "No hay gastos registrados",
+      newExpense: "Nuevo gasto",
+      edit: "Editar",
+      amount: "Importe",
+      currency: "Moneda",
+      date: "Fecha",
+      paymentMethod: "M\xE9todo de pago",
+      description: "Descripci\xF3n",
+      descriptionPlaceholder: "Detalles opcionales...",
+      save: "\u{1F4BE} Guardar",
+      approxEur: "\u2248 {amt} al tipo actual",
+      flightDetails: "\u2708\uFE0F Detalles del Vuelo",
+      from: "Desde",
+      to: "Hasta",
+      airline: "Aerol\xEDnea",
+      flightNo: "N\xBA vuelo",
+      departureTime: "Hora de salida",
+      departureTerminal: "Terminal salida",
+      arrivalTime: "Hora de llegada",
+      arrivalTerminal: "Terminal llegada",
+      luggage: "Equipaje",
+      luggagePlaceholder: "ej: 1 maleta 23kg + equipaje de mano",
+      accommodationDetails: "\u{1F3E8} Detalles del Alojamiento",
+      cityDestination: "Ciudad / Destino",
+      cityPlaceholder: "ej: Valencia, Par\xEDs...",
+      accommodationType: "Tipo de alojamiento",
+      typeHotel: "\u{1F3E8} Hotel",
+      typeAirbnb: "\u{1F3E0} Airbnb / Apartamento",
+      typeHostel: "\u{1F6CF}\uFE0F Hostal",
+      typeHomeExchange: "\u{1F504} HomeExchange",
+      typeFriends: "\u{1F465} Amigos / familia",
+      typeCamping: "\u26FA Camping",
+      typeOther: "\u{1F4CD} Otros",
+      typeChoose: "\u2014 elige \u2014",
+      freeAccommodation: "\u{1F49A} Alojamiento gratuito (HomeExchange, amigos, etc.) \u2014 deja el importe en 0",
+      hotelName: "Nombre hotel / anfitri\xF3n",
+      hotelNamePlaceholder: "ej: Hotel Westin, Casa de Mar\xEDa...",
+      address: "Direcci\xF3n",
+      bookedVia: "Reservado en",
+      bookedViaPlaceholder: "Booking, Airbnb, HomeExchange, directo...",
+      checkInDate: "Fecha de entrada",
+      checkInTime: "Hora de entrada",
+      checkOutDate: "Fecha de salida",
+      checkOutTime: "Hora de salida",
+      carDetails: "\u{1F697} Detalles del Coche",
+      company: "Empresa",
+      pickupDate: "Fecha de recogida",
+      pickupTime: "Hora de recogida",
+      dropoffDate: "Fecha de devoluci\xF3n",
+      dropoffTime: "Hora de devoluci\xF3n",
+      editVacationTitle: "\u270F\uFE0F Editar vacaciones",
+      deleteAll: "\u{1F5D1}\uFE0F Borrar todo e iniciar unas vacaciones nuevas",
+      days: "d\xEDas",
+      totalExpenses: "gastos",
+      dayLabel: "D\xEDa",
+      checkIn: "Entrada",
+      checkOut: "Salida",
+      activeAccommodation: "Alojamiento",
+      carPickup: "Recogida coche",
+      carDropoff: "Devoluci\xF3n coche",
+      rentalCar: "Coche de alquiler",
+      flight: "Vuelo",
+      departure: "Salida",
+      arrival: "Llegada",
+      terminal: "T",
+      free: "gratis",
+      dailyTotal: "Total d\xEDa",
+      notesPlaceholder: "Ruta, lugares tur\xEDsticos, reservas, ideas...",
+      notesLabel: "\u{1F4DD} Programa / Notas",
+      planningEmpty: "Configura las fechas de tus vacaciones o a\xF1ade gastos para ver el planning",
+      periodTotal: "Total per\xEDodo:",
+      noCharts: "No hay datos disponibles para gr\xE1ficos",
+      distributionTitle: "Distribuci\xF3n de gastos",
+      categoriesTitle: "Gastos por categor\xEDa (\u20AC)",
+      breakdownTitle: "Desglose por categor\xEDas",
+      atCurrentRate: "al tipo actual",
+      dayNames: ["Dom", "Lun", "Mar", "Mi\xE9", "Jue", "Vie", "S\xE1b"],
+      monthNames: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+      catAvion: "Vuelo",
+      catCazare: "Alojamiento",
+      catMasina: "Coche",
+      catTransport: "Transporte",
+      catRestaurant: "Restaurante",
+      catGroceries: "Supermercado",
+      catCafea: "Caf\xE9",
+      catShopping: "Compras",
+      catActivitati: "Actividades",
+      catMedic: "M\xE9dico",
+      catTaxe: "Tasas",
+      catDivertisment: "Entretenimiento",
+      trackerSub: "Rastreador de gastos",
+      departureLbl: "Salida:",
+      voiceLangCode: "es-ES",
+      friendsLabel: "Amigos"
+    }
+  };
+  const LangContext = createContext({ lang: "ro", t: TRANSLATIONS.ro, setLang: () => {
+  }, CATEGORII: [] });
+  const useLang = () => useContext(LangContext);
+  const getCATEGORII = (t) => [
+    { id: "avion", label: t.catAvion, icon: "\u2708\uFE0F", color: "#6366f1" },
+    { id: "cazare", label: t.catCazare, icon: "\u{1F3E8}", color: "#0ea5e9" },
+    { id: "masina", label: t.catMasina, icon: "\u{1F697}", color: "#10b981" },
+    { id: "transport", label: t.catTransport, icon: "\u{1F68C}", color: "#f59e0b" },
+    { id: "restaurant", label: t.catRestaurant, icon: "\u{1F37D}\uFE0F", color: "#ef4444" },
+    { id: "groceries", label: t.catGroceries, icon: "\u{1F6D2}", color: "#84cc16" },
+    { id: "cafea", label: t.catCafea, icon: "\u2615", color: "#a16207" },
+    { id: "shopping", label: t.catShopping, icon: "\u{1F6CD}\uFE0F", color: "#ec4899" },
+    { id: "activitati", label: t.catActivitati, icon: "\u{1F3AF}", color: "#8b5cf6" },
+    { id: "medic", label: t.catMedic, icon: "\u{1F3E5}", color: "#14b8a6" },
+    { id: "taxe", label: t.catTaxe, icon: "\u{1F9FE}", color: "#64748b" },
+    { id: "divertisment", label: t.catDivertisment, icon: "\u{1F389}", color: "#f97316" }
+  ];
+  const METODE_PLATA = ["Card", "Cash", "Revolut", "Transfer"];
+  const MONEDE = [
+    { code: "EUR", symbol: "\u20AC", name: "Euro", rate: 1 },
+    { code: "USD", symbol: "$", name: "US Dollar", rate: 0.92 },
+    { code: "GBP", symbol: "\xA3", name: "Pound Sterling", rate: 1.17 },
+    { code: "RON", symbol: "lei", name: "Leu rom\xE2nesc", rate: 0.201 },
+    { code: "CHF", symbol: "Fr", name: "Franc elve\u021Bian", rate: 1.04 },
+    { code: "JPY", symbol: "\xA5", name: "Yen japonez", rate: 61e-4 },
+    { code: "TRY", symbol: "\u20BA", name: "Lir\u0103 turceasc\u0103", rate: 0.027 },
+    { code: "THB", symbol: "\u0E3F", name: "Baht tailandez", rate: 0.026 },
+    { code: "AED", symbol: "\u062F.\u0625", name: "Dirham EAU", rate: 0.25 },
+    { code: "MXN", symbol: "MX$", name: "Peso mexican", rate: 0.046 },
+    { code: "PLN", symbol: "z\u0142", name: "Zlot polonez", rate: 0.232 },
+    { code: "HUF", symbol: "Ft", name: "Forint ungar", rate: 26e-4 },
+    { code: "CZK", symbol: "K\u010D", name: "Coroan\u0103 ceh\u0103", rate: 0.041 },
+    { code: "HRK", symbol: "kn", name: "Kuna croat\u0103", rate: 0.133 },
+    { code: "BGN", symbol: "\u043B\u0432", name: "Leva bulg\u0103resc", rate: 0.511 },
+    { code: "DKK", symbol: "kr", name: "Coroan\u0103 danez\u0103", rate: 0.134 },
+    { code: "SEK", symbol: "kr", name: "Coroan\u0103 suedez\u0103", rate: 0.087 },
+    { code: "NOK", symbol: "kr", name: "Coroan\u0103 norvegian\u0103", rate: 0.085 },
+    { code: "AUD", symbol: "A$", name: "Dolar australian", rate: 0.59 },
+    { code: "CAD", symbol: "C$", name: "Dolar canadian", rate: 0.68 },
+    { code: "MYR", symbol: "RM", name: "Ringgit malezian", rate: 0.21 },
+    { code: "SGD", symbol: "S$", name: "Dolar singaporez", rate: 0.69 },
+    { code: "IDR", symbol: "Rp", name: "Rupie indonezian\u0103", rate: 57e-6 },
+    { code: "VND", symbol: "\u20AB", name: "Dong vietnamez", rate: 37e-6 },
+    { code: "KRW", symbol: "\u20A9", name: "Won sud-coreean", rate: 67e-5 },
+    { code: "INR", symbol: "\u20B9", name: "Rupie indian\u0103", rate: 0.011 },
+    { code: "BRL", symbol: "R$", name: "Real brazilian", rate: 0.17 },
+    { code: "ZAR", symbol: "R", name: "Rand sud-african", rate: 0.05 },
+    { code: "EGP", symbol: "\xA3", name: "Lir\u0103 egiptean\u0103", rate: 0.018 },
+    { code: "MAD", symbol: "\u062F.\u0645.", name: "Dirham marocan", rate: 0.093 }
+  ];
+  const toEUR = (amount, currencyCode) => {
+    const m = MONEDE.find((x) => x.code === currencyCode);
+    return m ? amount * m.rate : amount;
+  };
+  const formatEUR = (v) => `\u20AC${v.toFixed(2)}`;
+  const today = () => (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+  const emptyBase = () => ({
+    id: Date.now() + Math.random(),
+    categorie: "restaurant",
+    suma: "",
+    moneda: "EUR",
+    metoda: "Card",
+    data: today(),
+    descriere: ""
+  });
+  const emptyAvion = () => ({
+    de_la: "",
+    la: "",
+    companie: "",
+    nr_zbor: "",
+    ora_plecare: "",
+    terminal_plecare: "",
+    ora_sosire: "",
+    terminal_sosire: "",
+    bagaje: ""
+  });
+  const emptyCazare = () => ({
+    oras: "",
+    nume: "",
+    adresa: "",
+    rezervat_prin: "",
+    tip: "",
+    checkin_data: "",
+    checkin_ora: "",
+    checkout_data: "",
+    checkout_ora: ""
+  });
+  const emptyCar = () => ({
+    companie: "",
+    pickup_data: "",
+    pickup_ora: "",
+    dropoff_data: "",
+    dropoff_ora: ""
+  });
+  function App() {
+    const [lang, setLang] = useState(() => {
+      var _a;
+      const saved = localStorage.getItem("vacanta_lang");
+      if (saved && TRANSLATIONS[saved]) return saved;
+      const browser = (_a = navigator.language) == null ? void 0 : _a.slice(0, 2);
+      return TRANSLATIONS[browser] ? browser : "ro";
+    });
+    const t = TRANSLATIONS[lang];
+    const CATEGORII = getCATEGORII(t);
+    const [tab, setTab] = useState("cheltuieli");
+    const [cheltuieli, setCheltuieli] = useState([]);
+    const [bugetTotal, setBugetTotal] = useState(2e3);
+    const [editBuget, setEditBuget] = useState(false);
+    const [showForm, setShowForm] = useState(false);
+    const [editItem, setEditItem] = useState(null);
+    const [filterPeriod, setFilterPeriod] = useState({ de_la: "", pana_la: "" });
+    const [filterCat, setFilterCat] = useState("toate");
+    const [landscape, setLandscape] = useState(false);
+    const [notite, setNotite] = useState({});
+    const [calendarZi, setCalendarZi] = useState(today());
+    const [listening, setListening] = useState(false);
+    const [transcript, setTranscript] = useState("");
+    const [aiProcessing, setAiProcessing] = useState(false);
+    const recognitionRef = useRef(null);
+    const [vacanta, setVacanta] = useState(null);
+    const [showVacantaEdit, setShowVacantaEdit] = useState(false);
+    useEffect(() => {
+      const s = localStorage.getItem("vacanta_data");
+      if (s) {
+        const d = JSON.parse(s);
+        if (d.cheltuieli) setCheltuieli(d.cheltuieli);
+        if (d.bugetTotal) setBugetTotal(d.bugetTotal);
+        if (d.notite) setNotite(d.notite);
+        if (d.vacanta) setVacanta(d.vacanta);
+      }
+    }, []);
+    useEffect(() => {
+      localStorage.setItem("vacanta_data", JSON.stringify({ cheltuieli, bugetTotal, notite, vacanta }));
+    }, [cheltuieli, bugetTotal, notite, vacanta]);
+    useEffect(() => {
+      localStorage.setItem("vacanta_lang", lang);
+    }, [lang]);
+    const totalEUR = cheltuieli.reduce((s, c) => s + toEUR(parseFloat(c.suma) || 0, c.moneda), 0);
+    const ramas = bugetTotal - totalEUR;
+    const progres = Math.min(totalEUR / bugetTotal * 100, 100);
+    const [voiceError, setVoiceError] = useState("");
+    const startVoice = useCallback(async () => {
+      setVoiceError("");
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        setVoiceError("\u274C Browser-ul nu suport\u0103 voce. Folose\u0219te Chrome.");
+        return;
+      }
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (err) {
+        setVoiceError("\u274C Acces microfon refuzat. Permite microfonul \xEEn Chrome.");
+        return;
+      }
+      const r = new SR();
+      r.lang = t.voiceLangCode || "ro-RO";
+      r.continuous = false;
+      r.interimResults = false;
+      r.maxAlternatives = 1;
+      r.onstart = () => {
+        setListening(true);
+        setVoiceError("");
+      };
+      r.onresult = (e) => {
+        const transcript2 = e.results[0][0].transcript;
+        setTranscript(transcript2);
+        setListening(false);
+        processVoiceWithAI(transcript2);
+      };
+      r.onerror = (e) => {
+        setListening(false);
+        const msgs = {
+          "not-allowed": "\u274C Microfon blocat. \xCEn Chrome: Set\u0103ri \u2192 Confiden\u021Bialitate \u2192 Microfon \u2192 Permite.",
+          "no-speech": "\u26A0\uFE0F Nu am auzit nimic. \xCEncearc\u0103 din nou.",
+          "network": "\u274C Eroare re\u021Bea. Verific\u0103 conexiunea.",
+          "audio-capture": "\u274C Microfon indisponibil. Verific\u0103 dac\u0103 e conectat.",
+          "aborted": "\u26A0\uFE0F Anulat."
+        };
+        setVoiceError(msgs[e.error] || `\u274C Eroare: ${e.error}`);
+      };
+      r.onend = () => setListening(false);
+      recognitionRef.current = r;
+      try {
+        r.start();
+      } catch (e) {
+        setVoiceError("\u274C Nu s-a putut porni microfonul: " + e.message);
+      }
+    }, [t]);
+    const processVoiceWithAI = async (text) => {
+      var _a;
+      setAiProcessing(true);
+      try {
+        const monedeList = MONEDE.map((m) => m.code).join(", ");
+        const prompt = `You are an assistant for a vacation expense tracking app. Analyze the spoken text and extract ALL relevant data.
+Categories: avion, cazare, masina, transport, restaurant, groceries, cafea, shopping, activitati, medic, taxe, divertisment
+Currencies: ${monedeList}
+Payment methods: Card, Cash, Revolut, Transfer
+Today: ${today()}
+
+Text: "${text}"
+
+Return ONLY valid JSON (no markdown). Choose the most specific category.
+For "cazare" (accommodation), extract extra fields if mentioned.
+For "avion" (flight), extract flight details if mentioned.
+For "masina" (car rental), extract car details if mentioned.
+
+JSON format:
+{
+  "categorie": "cazare",
+  "suma": 259,
+  "moneda": "EUR",
+  "metoda": "Card",
+  "data": "${today()}",
+  "descriere": "",
+  "extra": {
+    "oras": "Milano",
+    "nume": "Hotel Giacomo",
+    "tip": "hotel",
+    "checkin_data": "2026-04-03",
+    "checkin_ora": "15:00",
+    "checkout_data": "2026-04-05",
+    "checkout_ora": "",
+    "adresa": "",
+    "rezervat_prin": ""
+  }
+}
+For non-cazare/avion/masina categories, omit the "extra" field entirely.
+For avion extra use: { "de_la":"", "la":"", "companie":"", "nr_zbor":"", "ora_plecare":"", "terminal_plecare":"", "ora_sosire":"", "terminal_sosire":"", "bagaje":"" }
+For masina extra use: { "companie":"", "pickup_data":"", "pickup_ora":"", "dropoff_data":"", "dropoff_ora":"" }`;
+        const resp = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 800,
+            messages: [{ role: "user", content: prompt }]
+          })
+        });
+        const data = await resp.json();
+        const raw = ((_a = data.content) == null ? void 0 : _a.map((b) => b.text || "").join("")) || "";
+        const clean = raw.replace(/```json|```/g, "").trim();
+        const parsed = JSON.parse(clean);
+        const newItem = { ...emptyBase(), ...parsed, id: Date.now() + Math.random() };
+        if (parsed.extra && Object.keys(parsed.extra).length > 0) {
+          newItem.extra = parsed.extra;
+        }
+        setEditItem(newItem);
+        setShowForm(true);
+      } catch {
+        setEditItem({ ...emptyBase(), descriere: text });
+        setShowForm(true);
+      }
+      setAiProcessing(false);
+      setTranscript("");
+    };
+    const saveItem = (item) => {
+      setCheltuieli((prev) => {
+        const idx = prev.findIndex((x) => x.id === item.id);
+        if (idx >= 0) {
+          const n = [...prev];
+          n[idx] = item;
+          return n;
+        }
+        return [item, ...prev];
+      });
+      setShowForm(false);
+      setEditItem(null);
+    };
+    const deleteItem = (id) => setCheltuieli((prev) => prev.filter((x) => x.id !== id));
+    const filtered = cheltuieli.filter((c) => {
+      if (filterCat !== "toate" && c.categorie !== filterCat) return false;
+      if (filterPeriod.de_la && c.data < filterPeriod.de_la) return false;
+      if (filterPeriod.pana_la && c.data > filterPeriod.pana_la) return false;
+      return true;
+    });
+    const totalFiltered = filtered.reduce((s, c) => s + toEUR(parseFloat(c.suma) || 0, c.moneda), 0);
+    const allDates = [...new Set(cheltuieli.map((c) => c.data))].sort();
+    const zborDates = cheltuieli.filter((c) => c.categorie === "avion").map((c) => c.data);
+    const cazareDates = cheltuieli.filter((c) => c.categorie === "cazare" && c.extra).flatMap((c) => {
+      const dates = [];
+      if (c.extra.checkin_data) dates.push(c.extra.checkin_data);
+      if (c.extra.checkout_data) dates.push(c.extra.checkout_data);
+      return dates;
+    });
+    const masinaDates = cheltuieli.filter((c) => c.categorie === "masina" && c.extra).flatMap((c) => {
+      const dates = [];
+      if (c.extra.pickup_data) dates.push(c.extra.pickup_data);
+      if (c.extra.dropoff_data) dates.push(c.extra.dropoff_data);
+      return dates;
+    });
+    const cheltuieliPeZi = (zi) => cheltuieli.filter((c) => c.data === zi);
+    const totalPeZi = (zi) => cheltuieliPeZi(zi).reduce((s, c) => s + toEUR(parseFloat(c.suma) || 0, c.moneda), 0);
+    const pieData = CATEGORII.map((cat) => {
+      const total = filtered.filter((c) => c.categorie === cat.id).reduce((s, c) => s + toEUR(parseFloat(c.suma) || 0, c.moneda), 0);
+      return { name: cat.label, value: parseFloat(total.toFixed(2)), color: cat.color, icon: cat.icon };
+    }).filter((d) => d.value > 0);
+    const barData = CATEGORII.map((cat) => ({
+      name: cat.icon + " " + cat.label.slice(0, 5),
+      EUR: parseFloat(
+        filtered.filter((c) => c.categorie === cat.id).reduce((s, c) => s + toEUR(parseFloat(c.suma) || 0, c.moneda), 0).toFixed(2)
+      ),
+      fill: cat.color
+    })).filter((d) => d.EUR > 0);
+    if (!vacanta) {
+      return /* @__PURE__ */ React.createElement(LangContext.Provider, { value: { lang, t, setLang, CATEGORII } }, /* @__PURE__ */ React.createElement(SetupVacanta, { onSave: (v) => {
+        setVacanta(v);
+        setBugetTotal(v.buget);
+      } }));
+    }
+    return /* @__PURE__ */ React.createElement(LangContext.Provider, { value: { lang, t, setLang, CATEGORII } }, /* @__PURE__ */ React.createElement("div", { style: styles.app(landscape) }, /* @__PURE__ */ React.createElement("div", { style: styles.header }, /* @__PURE__ */ React.createElement("div", { style: styles.headerRow1 }, /* @__PURE__ */ React.createElement("span", { style: styles.logo }, "\u2708\uFE0F"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ React.createElement("div", { style: styles.appTitle }, vacanta.destinatie || "Vaca\u021BiaApp"), /* @__PURE__ */ React.createElement("div", { style: styles.appSub }, vacanta.data_plecare && vacanta.data_sosire ? `${vacanta.data_plecare} \u2192 ${vacanta.data_sosire}` : vacanta.data_plecare ? vacanta.data_plecare : t.trackerSub))), /* @__PURE__ */ React.createElement("div", { style: styles.headerRow2 }, /* @__PURE__ */ React.createElement(LangPicker, { lang, setLang }), /* @__PURE__ */ React.createElement("button", { style: styles.iconBtn, title: t.editVacation, onClick: () => setShowVacantaEdit(true) }, "\u270F\uFE0F"), /* @__PURE__ */ React.createElement("button", { style: styles.iconBtn, onClick: () => setLandscape(!landscape), title: landscape ? "Portrait" : "Landscape" }, landscape ? /* @__PURE__ */ React.createElement("svg", { width: "16", height: "16", viewBox: "0 0 18 18", fill: "none" }, /* @__PURE__ */ React.createElement("rect", { x: "1", y: "4", width: "16", height: "10", rx: "2", stroke: "#475569", strokeWidth: "1.8", fill: "none" })) : /* @__PURE__ */ React.createElement("svg", { width: "16", height: "16", viewBox: "0 0 18 18", fill: "none" }, /* @__PURE__ */ React.createElement("rect", { x: "4", y: "1", width: "10", height: "16", rx: "2", stroke: "#475569", strokeWidth: "1.8", fill: "none" }))), /* @__PURE__ */ React.createElement("div", { style: styles.budgetBadge, onClick: () => setEditBuget(true) }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 10, color: "#64748b" } }, t.budget), /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 700, fontSize: 13, color: ramas < 0 ? "#ef4444" : "#0f172a" } }, "\u20AC", bugetTotal.toFixed(0))))), /* @__PURE__ */ React.createElement("div", { style: styles.budgetSection }, /* @__PURE__ */ React.createElement("div", { style: styles.budgetRow }, /* @__PURE__ */ React.createElement("span", { style: styles.budgetLabel }, t.spent, ": ", /* @__PURE__ */ React.createElement("strong", null, formatEUR(totalEUR))), /* @__PURE__ */ React.createElement("span", { style: { ...styles.budgetLabel, color: ramas < 0 ? "#ef4444" : "#10b981" } }, t.remaining, ": ", /* @__PURE__ */ React.createElement("strong", null, formatEUR(Math.abs(ramas)), ramas < 0 ? ` ${t.exceeded}` : ""))), /* @__PURE__ */ React.createElement("div", { style: styles.progressBar }, /* @__PURE__ */ React.createElement("div", { style: styles.progressFill(progres) })), editBuget && /* @__PURE__ */ React.createElement("div", { style: styles.inlineEdit }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "number",
+        defaultValue: bugetTotal,
+        autoFocus: true,
+        style: styles.inlineInput,
+        onBlur: (e) => {
+          setBugetTotal(parseFloat(e.target.value) || bugetTotal);
+          setEditBuget(false);
+        },
+        onKeyDown: (e) => e.key === "Enter" && e.target.blur()
+      }
+    ), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 12, color: "#64748b" } }, t.pressEnter))), /* @__PURE__ */ React.createElement("div", { style: styles.tabs }, [
+      { id: "cheltuieli", label: t.expenses },
+      { id: "calendar", label: t.planning },
+      { id: "statistici", label: t.statistics }
+    ].map((t2) => /* @__PURE__ */ React.createElement("button", { key: t2.id, style: styles.tab(tab === t2.id), onClick: () => setTab(t2.id) }, t2.label))), /* @__PURE__ */ React.createElement("div", { style: styles.content }, tab === "cheltuieli" && /* @__PURE__ */ React.createElement(
+      TabCheltuieli,
+      {
+        cheltuieli: filtered,
+        allCheltuieli: cheltuieli,
+        filterCat,
+        setFilterCat,
+        filterPeriod,
+        setFilterPeriod,
+        totalFiltered,
+        onAdd: () => {
+          setEditItem(emptyBase());
+          setShowForm(true);
+        },
+        onEdit: (item) => {
+          setEditItem(item);
+          setShowForm(true);
+        },
+        onDelete: deleteItem,
+        onVoice: startVoice,
+        listening,
+        aiProcessing,
+        transcript,
+        voiceError,
+        t,
+        CATEGORII
+      }
+    ), tab === "calendar" && /* @__PURE__ */ React.createElement(
+      TabCalendar,
+      {
+        cheltuieli,
+        notite,
+        setNotite,
+        vacanta,
+        cheltuieliPeZi,
+        totalPeZi,
+        onEditCheltuiala: (item) => {
+          setEditItem(item);
+          setShowForm(true);
+        }
+      }
+    ), tab === "statistici" && /* @__PURE__ */ React.createElement(
+      TabStatistici,
+      {
+        pieData,
+        barData,
+        filtered,
+        totalFiltered,
+        filterPeriod,
+        setFilterPeriod,
+        t
+      }
+    )), showVacantaEdit && /* @__PURE__ */ React.createElement(
+      VacantaEditModal,
+      {
+        vacanta,
+        onSave: (v) => {
+          setVacanta(v);
+          setBugetTotal(v.buget);
+          setShowVacantaEdit(false);
+        },
+        onClose: () => setShowVacantaEdit(false),
+        onReset: () => {
+          setVacanta(null);
+          setCheltuieli([]);
+          setNotite({});
+          setBugetTotal(2e3);
+          setShowVacantaEdit(false);
+        },
+        t
+      }
+    ), showForm && editItem && /* @__PURE__ */ React.createElement(
+      FormModal,
+      {
+        item: editItem,
+        onSave: saveItem,
+        onClose: () => {
+          setShowForm(false);
+          setEditItem(null);
+        }
+      }
+    )));
+  }
+  function LangPicker({ lang, setLang }) {
+    const [open, setOpen] = useState(false);
+    const flags = { ro: "\u{1F1F7}\u{1F1F4}", en: "\u{1F1EC}\u{1F1E7}", es: "\u{1F1EA}\u{1F1F8}" };
+    return /* @__PURE__ */ React.createElement("div", { style: { position: "relative" } }, /* @__PURE__ */ React.createElement("button", { style: {
+      background: "none",
+      border: "1px solid #e2e8f0",
+      borderRadius: 8,
+      padding: "4px 8px",
+      cursor: "pointer",
+      fontSize: 18,
+      lineHeight: 1,
+      display: "flex",
+      alignItems: "center",
+      gap: 3
+    }, onClick: () => setOpen((o) => !o) }, flags[lang], /* @__PURE__ */ React.createElement("span", { style: { fontSize: 9, color: "#94a3b8" } }, "\u25BC")), open && /* @__PURE__ */ React.createElement("div", { style: {
+      position: "absolute",
+      top: "110%",
+      right: 0,
+      background: "#fff",
+      border: "1px solid #e2e8f0",
+      borderRadius: 10,
+      padding: 4,
+      boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+      zIndex: 50,
+      display: "flex",
+      flexDirection: "column",
+      gap: 2
+    } }, Object.entries(flags).filter(([l]) => l !== lang).map(([l, f]) => /* @__PURE__ */ React.createElement("button", { key: l, onClick: () => {
+      setLang(l);
+      setOpen(false);
+    }, style: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontSize: 20,
+      padding: "4px 8px",
+      borderRadius: 7,
+      textAlign: "left"
+    } }, f))));
+  }
+  function SetupVacanta({ onSave }) {
+    const { lang, t, setLang } = useLang();
+    const [form, setForm] = useState({
+      destinatie: "",
+      data_plecare: "",
+      data_sosire: "",
+      buget: 2e3
+    });
+    const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+    const valid = form.destinatie.trim() && form.data_plecare;
+    return /* @__PURE__ */ React.createElement("div", { style: setupStyles.bg }, /* @__PURE__ */ React.createElement("div", { style: setupStyles.card }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "center", marginBottom: 16 } }, /* @__PURE__ */ React.createElement(LangPicker, { lang, setLang })), /* @__PURE__ */ React.createElement("div", { style: setupStyles.emoji }, "\u{1F30D}"), /* @__PURE__ */ React.createElement("div", { style: setupStyles.title }, t.planYourVacation), /* @__PURE__ */ React.createElement("div", { style: setupStyles.sub }, t.setupSub), /* @__PURE__ */ React.createElement("div", { style: setupStyles.field }, /* @__PURE__ */ React.createElement("label", { style: setupStyles.label }, t.destination, " ", t.required), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        style: setupStyles.input,
+        placeholder: t.destinationPlaceholder,
+        value: form.destinatie,
+        onChange: (e) => set("destinatie", e.target.value)
+      }
+    )), /* @__PURE__ */ React.createElement("div", { style: setupStyles.row }, /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: setupStyles.label }, t.departureDate, " ", t.required), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "date",
+        style: setupStyles.input,
+        value: form.data_plecare,
+        onChange: (e) => set("data_plecare", e.target.value)
+      }
+    )), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: setupStyles.label }, t.returnDate), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "date",
+        style: setupStyles.input,
+        value: form.data_sosire,
+        onChange: (e) => set("data_sosire", e.target.value)
+      }
+    ))), /* @__PURE__ */ React.createElement("div", { style: setupStyles.field }, /* @__PURE__ */ React.createElement("label", { style: setupStyles.label }, t.totalBudget), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "number",
+        style: setupStyles.input,
+        value: form.buget,
+        min: 0,
+        onChange: (e) => set("buget", parseFloat(e.target.value) || 0)
+      }
+    )), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        style: { ...setupStyles.btn, opacity: valid ? 1 : 0.5 },
+        disabled: !valid,
+        onClick: () => onSave(form)
+      },
+      t.startVacation
+    )));
+  }
+  const setupStyles = {
+    bg: {
+      minHeight: "100vh",
+      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 20,
+      fontFamily: "'Nunito', 'Segoe UI', sans-serif"
+    },
+    card: {
+      background: "#fff",
+      borderRadius: 24,
+      padding: "36px 28px",
+      maxWidth: 440,
+      width: "100%",
+      boxShadow: "0 20px 60px rgba(0,0,0,0.2)"
+    },
+    emoji: { fontSize: 52, textAlign: "center", marginBottom: 8 },
+    title: { fontWeight: 900, fontSize: 24, color: "#0f172a", textAlign: "center", marginBottom: 6 },
+    sub: { fontSize: 13, color: "#64748b", textAlign: "center", marginBottom: 28, lineHeight: 1.5 },
+    field: { marginBottom: 14 },
+    row: { display: "flex", gap: 12, marginBottom: 14 },
+    label: { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 5 },
+    input: {
+      width: "100%",
+      border: "1.5px solid #e2e8f0",
+      borderRadius: 12,
+      padding: "11px 14px",
+      fontSize: 14,
+      color: "#0f172a",
+      boxSizing: "border-box",
+      outline: "none",
+      transition: "border 0.2s"
+    },
+    btn: {
+      width: "100%",
+      background: "linear-gradient(135deg, #667eea, #764ba2)",
+      color: "#fff",
+      border: "none",
+      borderRadius: 14,
+      padding: "15px",
+      fontSize: 16,
+      fontWeight: 800,
+      cursor: "pointer",
+      marginTop: 8,
+      letterSpacing: "-0.3px"
+    }
+  };
+  function VacantaEditModal({ vacanta, onSave, onClose, onReset, t }) {
+    const [form, setForm] = useState({ ...vacanta });
+    const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+    return /* @__PURE__ */ React.createElement("div", { style: styles.overlay, onClick: (e) => e.target === e.currentTarget && onClose() }, /* @__PURE__ */ React.createElement("div", { style: styles.modal }, /* @__PURE__ */ React.createElement("div", { style: styles.modalHeader }, /* @__PURE__ */ React.createElement("span", { style: styles.modalTitle }, t.editVacationTitle), /* @__PURE__ */ React.createElement("button", { style: styles.closeBtn, onClick: onClose }, "\u2715")), /* @__PURE__ */ React.createElement("div", { style: styles.formBody }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.destination), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        style: styles.input,
+        value: form.destinatie || "",
+        onChange: (e) => set("destinatie", e.target.value)
+      }
+    ), /* @__PURE__ */ React.createElement("div", { style: styles.row }, /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.departureDate), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "date",
+        style: styles.input,
+        value: form.data_plecare || "",
+        onChange: (e) => set("data_plecare", e.target.value)
+      }
+    )), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.returnDate), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "date",
+        style: styles.input,
+        value: form.data_sosire || "",
+        onChange: (e) => set("data_sosire", e.target.value)
+      }
+    ))), /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.totalBudget), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "number",
+        style: styles.input,
+        value: form.buget || "",
+        onChange: (e) => set("buget", parseFloat(e.target.value) || 0)
+      }
+    ), /* @__PURE__ */ React.createElement("button", { style: styles.btnSave, onClick: () => onSave(form) }, t.save), /* @__PURE__ */ React.createElement("button", { onClick: onReset, style: {
+      width: "100%",
+      marginTop: 10,
+      background: "none",
+      border: "1.5px solid #fca5a5",
+      color: "#ef4444",
+      borderRadius: 14,
+      padding: "12px",
+      fontSize: 14,
+      fontWeight: 700,
+      cursor: "pointer"
+    } }, t.deleteAll))));
+  }
+  function TabCheltuieli({
+    cheltuieli,
+    filterCat,
+    setFilterCat,
+    filterPeriod,
+    setFilterPeriod,
+    totalFiltered,
+    onAdd,
+    onEdit,
+    onDelete,
+    onVoice,
+    listening,
+    aiProcessing,
+    transcript,
+    voiceError,
+    t,
+    CATEGORII
+  }) {
+    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: styles.actionRow }, /* @__PURE__ */ React.createElement("button", { style: styles.btnPrimary, onClick: onAdd }, t.add), /* @__PURE__ */ React.createElement("button", { style: { ...styles.btnVoice, ...listening ? styles.btnVoiceActive : {} }, onClick: onVoice }, listening ? t.listening : aiProcessing ? t.processing : t.voice)), voiceError && /* @__PURE__ */ React.createElement("div", { style: {
+      background: "#fef2f2",
+      border: "1px solid #fca5a5",
+      borderRadius: 10,
+      padding: "10px 14px",
+      fontSize: 12,
+      color: "#dc2626",
+      marginBottom: 8,
+      lineHeight: 1.5
+    } }, voiceError), transcript && /* @__PURE__ */ React.createElement("div", { style: styles.transcriptBubble }, '"', transcript, '"'), /* @__PURE__ */ React.createElement("div", { style: styles.filterCol }, /* @__PURE__ */ React.createElement("select", { style: styles.select, value: filterCat, onChange: (e) => setFilterCat(e.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "toate" }, t.allCategories), CATEGORII.map((c) => /* @__PURE__ */ React.createElement("option", { key: c.id, value: c.id }, c.icon, " ", c.label))), /* @__PURE__ */ React.createElement("div", { style: styles.filterDateRow }, /* @__PURE__ */ React.createElement("div", { style: styles.dateWrap }, /* @__PURE__ */ React.createElement("span", { style: styles.dateWrapLabel }, "\u{1F4C5} ", t.from, ":"), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "date",
+        style: styles.dateInput,
+        value: filterPeriod.de_la,
+        onChange: (e) => setFilterPeriod((p) => ({ ...p, de_la: e.target.value }))
+      }
+    ), filterPeriod.de_la && /* @__PURE__ */ React.createElement("button", { style: styles.dateClear, onClick: () => setFilterPeriod((p) => ({ ...p, de_la: "" })) }, "\u2715")), /* @__PURE__ */ React.createElement("div", { style: styles.dateWrap }, /* @__PURE__ */ React.createElement("span", { style: styles.dateWrapLabel }, "\u{1F4C5} ", t.to, ":"), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "date",
+        style: styles.dateInput,
+        value: filterPeriod.pana_la,
+        onChange: (e) => setFilterPeriod((p) => ({ ...p, pana_la: e.target.value }))
+      }
+    ), filterPeriod.pana_la && /* @__PURE__ */ React.createElement("button", { style: styles.dateClear, onClick: () => setFilterPeriod((p) => ({ ...p, pana_la: "" })) }, "\u2715")))), /* @__PURE__ */ React.createElement("div", { style: styles.totalRow }, /* @__PURE__ */ React.createElement("span", { style: styles.totalLabel }, t.filteredTotal), /* @__PURE__ */ React.createElement("span", { style: styles.totalValue }, formatEUR(totalFiltered))), cheltuieli.length === 0 && /* @__PURE__ */ React.createElement("div", { style: styles.emptyState }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 48 } }, "\u{1F9F3}"), /* @__PURE__ */ React.createElement("div", { style: { color: "#94a3b8", marginTop: 8 } }, t.noExpenses)), cheltuieli.map((c) => /* @__PURE__ */ React.createElement(CheltuialaCard, { key: c.id, item: c, onEdit, onDelete, t, CATEGORII })));
+  }
+  function CheltuialaCard({ item, onEdit, onDelete, t: tProp, CATEGORII: CATprop }) {
+    const { t: tCtx, CATEGORII: CATctx } = useLang();
+    const t = tProp || tCtx;
+    const CATEGORII = CATprop && CATprop.length > 0 ? CATprop : CATctx && CATctx.length > 0 ? CATctx : getCATEGORII(t);
+    const cat = CATEGORII.find((c) => c.id === item.categorie) || CATEGORII[0];
+    const eur = toEUR(parseFloat(item.suma) || 0, item.moneda);
+    const moneda = MONEDE.find((m) => m.code === item.moneda);
+    return /* @__PURE__ */ React.createElement("div", { style: styles.card }, /* @__PURE__ */ React.createElement("div", { style: { ...styles.cardAccent, background: cat.color } }), /* @__PURE__ */ React.createElement("div", { style: styles.cardMain }, /* @__PURE__ */ React.createElement("div", { style: styles.cardHeader }, /* @__PURE__ */ React.createElement("span", { style: styles.cardIcon }, cat.icon), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("div", { style: styles.cardCat }, cat.label), item.descriere && /* @__PURE__ */ React.createElement("div", { style: styles.cardDesc }, item.descriere), item.extra && item.categorie === "avion" && item.extra.nr_zbor && /* @__PURE__ */ React.createElement("div", { style: styles.cardExtra }, "\u2708\uFE0F ", item.extra.de_la, " \u2192 ", item.extra.la, " \xB7 ", item.extra.nr_zbor), item.extra && item.categorie === "cazare" && /* @__PURE__ */ React.createElement("div", { style: styles.cardExtra }, item.extra.oras ? `\u{1F4CD} ${item.extra.oras}` : "", item.extra.nume ? ` \xB7 ${item.extra.nume}` : "", item.extra.tip === "homeexchange" ? " \xB7 \u{1F504} HomeExchange" : item.extra.tip === "prieteni" ? ` \xB7 \u{1F465} ${(t == null ? void 0 : t.friendsLabel) || ""}` : ""), item.extra && item.categorie === "masina" && item.extra.companie && /* @__PURE__ */ React.createElement("div", { style: styles.cardExtra }, "\u{1F697} ", item.extra.companie)), /* @__PURE__ */ React.createElement("div", { style: styles.cardRight }, /* @__PURE__ */ React.createElement("div", { style: styles.cardAmount }, formatEUR(eur)), item.moneda !== "EUR" && /* @__PURE__ */ React.createElement("div", { style: styles.cardAmountOrig }, moneda == null ? void 0 : moneda.symbol, item.suma, " ", item.moneda), /* @__PURE__ */ React.createElement("div", { style: styles.cardMeta }, item.data, " \xB7 ", item.metoda)))), /* @__PURE__ */ React.createElement("div", { style: styles.cardActions }, /* @__PURE__ */ React.createElement("button", { style: styles.btnEdit, onClick: () => onEdit(item) }, "\u270F\uFE0F"), /* @__PURE__ */ React.createElement("button", { style: styles.btnDel, onClick: () => onDelete(item.id) }, "\u{1F5D1}\uFE0F")));
+  }
+  function TabCalendar({
+    cheltuieli,
+    notite,
+    setNotite,
+    vacanta,
+    cheltuieliPeZi,
+    totalPeZi,
+    onEditCheltuiala
+  }) {
+    const { t } = useLang();
+    const buildAllDates = () => {
+      const set = /* @__PURE__ */ new Set();
+      cheltuieli.forEach((c) => {
+        if (c.data) set.add(c.data);
+        if (c.extra) {
+          const ex = c.extra;
+          [ex.checkin_data, ex.checkout_data, ex.pickup_data, ex.dropoff_data].forEach((d) => d && set.add(d));
+        }
+      });
+      if (vacanta == null ? void 0 : vacanta.data_plecare) {
+        const start = new Date(vacanta.data_plecare);
+        const end = (vacanta == null ? void 0 : vacanta.data_sosire) ? new Date(vacanta.data_sosire) : start;
+        let cur = new Date(start);
+        while (cur <= end) {
+          set.add(cur.toISOString().split("T")[0]);
+          cur.setDate(cur.getDate() + 1);
+        }
+      }
+      return [...set].sort();
+    };
+    const allDates = buildAllDates();
+    const DAY_NAMES = t.dayNames;
+    const MONTH_NAMES = t.monthNames;
+    const formatDateLabel = (d) => {
+      const dt = /* @__PURE__ */ new Date(d + "T12:00:00");
+      return `${DAY_NAMES[dt.getDay()]}, ${dt.getDate()} ${MONTH_NAMES[dt.getMonth()]} ${dt.getFullYear()}`;
+    };
+    const getDayNum = (d) => {
+      if (!(vacanta == null ? void 0 : vacanta.data_plecare)) return null;
+      const start = /* @__PURE__ */ new Date(vacanta.data_plecare + "T12:00:00");
+      const cur = /* @__PURE__ */ new Date(d + "T12:00:00");
+      const diff = Math.round((cur - start) / 864e5) + 1;
+      return diff > 0 ? diff : null;
+    };
+    const tLabel = (key, ...args) => t[key] || key;
+    const getSpecialItems = (d) => {
+      const items = [];
+      cheltuieli.forEach((c) => {
+        var _a, _b, _c;
+        if (c.categorie === "avion" && c.data === d) {
+          items.push({ type: "avion", icon: "\u2708\uFE0F", color: "#6366f1", label: ((_a = c.extra) == null ? void 0 : _a.nr_zbor) ? `Zbor ${c.extra.de_la || ""}\u2192${c.extra.la || ""} \xB7 ${c.extra.nr_zbor}` : `Zbor${((_b = c.extra) == null ? void 0 : _b.de_la) ? ` ${c.extra.de_la}\u2192${c.extra.la}` : ""}`, sub: ((_c = c.extra) == null ? void 0 : _c.ora_plecare) ? `Plecare ${c.extra.ora_plecare}${c.extra.terminal_plecare ? ` T${c.extra.terminal_plecare}` : ""} \xB7 Sosire ${c.extra.ora_sosire || ""}${c.extra.terminal_sosire ? ` T${c.extra.terminal_sosire}` : ""}` : "", item: c });
+        }
+        if (c.categorie === "cazare" && c.extra) {
+          const tipIcon = { hotel: "\u{1F3E8}", airbnb: "\u{1F3E0}", hostel: "\u{1F6CF}\uFE0F", homeexchange: "\u{1F504}", prieteni: "\u{1F465}", camping: "\u26FA", alt: "\u{1F4CD}" }[c.extra.tip] || "\u{1F3E8}";
+          const locLabel = c.extra.oras || c.extra.nume || "Cazare";
+          const costInfo = parseFloat(c.suma) === 0 || !c.suma ? ` \xB7 ${t.free}` : "";
+          if (c.extra.checkin_data === d) items.push({ type: "checkin", icon: tipIcon, color: "#0ea5e9", label: `${t.checkIn}: ${locLabel}${costInfo}`, sub: `${c.extra.adresa || ""}${c.extra.checkin_ora ? ` \xB7 ${c.extra.checkin_ora}` : ""}${c.extra.rezervat_prin ? ` \xB7 ${c.extra.rezervat_prin}` : ""}`, item: c });
+          if (c.extra.checkout_data === d) items.push({ type: "checkout", icon: tipIcon, color: "#94a3b8", label: `${t.checkOut}: ${locLabel}`, sub: c.extra.checkout_ora ? c.extra.checkout_ora : "", item: c });
+          if (c.extra.checkin_data && c.extra.checkout_data && d > c.extra.checkin_data && d < c.extra.checkout_data)
+            items.push({ type: "cazare_mid", icon: tipIcon, color: "#0ea5e9", label: `${t.activeAccommodation}: ${locLabel}${costInfo}`, sub: c.extra.adresa || "", item: c });
+        }
+        if (c.categorie === "masina" && c.extra) {
+          if (c.extra.pickup_data === d) items.push({ type: "pickup", icon: "\u{1F697}", color: "#10b981", label: `${t.carPickup}: ${c.extra.companie || ""}`, sub: c.extra.pickup_ora || "", item: c });
+          if (c.extra.dropoff_data === d) items.push({ type: "dropoff", icon: "\u{1F697}", color: "#64748b", label: `${t.carDropoff}: ${c.extra.companie || ""}`, sub: c.extra.dropoff_ora || "", item: c });
+          if (c.extra.pickup_data && c.extra.dropoff_data && d > c.extra.pickup_data && d < c.extra.dropoff_data)
+            items.push({ type: "masina_mid", icon: "\u{1F697}", color: "#10b981", label: `${t.rentalCar}: ${c.extra.companie || ""}`, sub: "", item: c });
+        }
+      });
+      return items;
+    };
+    const getLocationForDay = (d) => {
+      const cazari = cheltuieli.filter((c) => c.categorie === "cazare" && c.extra);
+      for (const c of cazari) {
+        const ci = c.extra.checkin_data;
+        const co = c.extra.checkout_data;
+        if (ci && co && d >= ci && d < co) {
+          return c.extra.oras || c.extra.nume || null;
+        }
+        if (ci && !co && d === ci) {
+          return c.extra.oras || c.extra.nume || null;
+        }
+        if (ci && co && d === co) {
+          return c.extra.oras || c.extra.nume || null;
+        }
+      }
+      return null;
+    };
+    const isToday = (d) => d === (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+    const isPast = (d) => d < (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+    if (allDates.length === 0) {
+      return /* @__PURE__ */ React.createElement("div", { style: styles.emptyState }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 48 } }, "\u{1F4C5}"), /* @__PURE__ */ React.createElement("div", { style: { color: "#94a3b8", textAlign: "center" } }, t.planningEmpty));
+    }
+    return /* @__PURE__ */ React.createElement("div", { style: { paddingBottom: 20 } }, /* @__PURE__ */ React.createElement("div", { style: calStyles.summaryBar }, /* @__PURE__ */ React.createElement("span", { style: calStyles.summaryItem }, "\u{1F4C6} ", allDates.length, " ", t.days), /* @__PURE__ */ React.createElement("span", { style: calStyles.summaryItem }, "\u{1F4B3} ", cheltuieli.length, " ", t.totalExpenses), /* @__PURE__ */ React.createElement("span", { style: calStyles.summaryItem }, "\u{1F4B6} ", formatEUR(cheltuieli.reduce((s, c) => s + toEUR(parseFloat(c.suma) || 0, c.moneda), 0)))), allDates.map((d) => /* @__PURE__ */ React.createElement(
+      DayRow,
+      {
+        key: d,
+        date: d,
+        dayNum: getDayNum(d),
+        label: formatDateLabel(d),
+        isToday: isToday(d),
+        isPast: isPast(d),
+        location: getLocationForDay(d),
+        specialItems: getSpecialItems(d),
+        cheltuieli: cheltuieliPeZi(d).filter((c) => c.categorie !== "avion" && !(c.categorie === "cazare") && !(c.categorie === "masina")),
+        allCheltuieli: cheltuieliPeZi(d),
+        total: totalPeZi(d),
+        nota: notite[d] || "",
+        onNotaChange: (v) => setNotite((n) => ({ ...n, [d]: v })),
+        onEditCheltuiala
+      }
+    )));
+  }
+  function DayRow({ date, dayNum, label, isToday, isPast, location, specialItems, cheltuieli, allCheltuieli, total, nota, onNotaChange, onEditCheltuiala }) {
+    const { t, CATEGORII: ctxCat } = useLang();
+    const SAFE_CATS = ctxCat && ctxCat.length > 0 ? ctxCat : getCATEGORII(t);
+    const [expanded, setExpanded] = useState(isToday || specialItems.length > 0 || allCheltuieli.length > 0);
+    const [notaVal, setNotaVal] = useState(nota);
+    useEffect(() => setNotaVal(nota), [nota]);
+    const hasContent = specialItems.length > 0 || allCheltuieli.length > 0 || nota;
+    return /* @__PURE__ */ React.createElement("div", { style: calStyles.dayRow(isToday, isPast) }, /* @__PURE__ */ React.createElement("div", { style: calStyles.dayHeader, onClick: () => setExpanded((e) => !e) }, /* @__PURE__ */ React.createElement("div", { style: calStyles.dayLeft }, /* @__PURE__ */ React.createElement("div", { style: calStyles.dayNumBadge(isToday, isPast) }, dayNum ? `${t.dayLabel} ${dayNum}` : date.slice(5)), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("div", { style: calStyles.dayLabel(isToday) }, label), location && /* @__PURE__ */ React.createElement("div", { style: calStyles.locationPill }, "\u{1F4CD} ", location), /* @__PURE__ */ React.createElement("div", { style: calStyles.badgeRow }, specialItems.map((s, i) => /* @__PURE__ */ React.createElement("span", { key: i, style: calStyles.badge(s.color) }, s.icon, " ", s.type.includes("mid") ? "\u2194" : "")), allCheltuieli.length > 0 && /* @__PURE__ */ React.createElement("span", { style: calStyles.badge("#6366f1") }, "\u{1F4B3} ", allCheltuieli.length), nota && /* @__PURE__ */ React.createElement("span", { style: calStyles.badge("#f59e0b") }, "\u{1F4DD}")))), /* @__PURE__ */ React.createElement("div", { style: calStyles.dayRight }, total > 0 && /* @__PURE__ */ React.createElement("div", { style: calStyles.dayTotal }, formatEUR(total)), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12, color: "#94a3b8", marginTop: 2 } }, expanded ? "\u25B2" : "\u25BC"))), expanded && /* @__PURE__ */ React.createElement("div", { style: calStyles.dayBody }, specialItems.map((s, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: calStyles.specialItem(s.color), onClick: () => onEditCheltuiala(s.item) }, /* @__PURE__ */ React.createElement("div", { style: calStyles.specialDot(s.color) }), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("div", { style: calStyles.specialLabel }, s.icon, " ", s.label), s.sub && /* @__PURE__ */ React.createElement("div", { style: calStyles.specialSub }, s.sub)), /* @__PURE__ */ React.createElement("span", { style: calStyles.editHint }, "\u270F\uFE0F"))), allCheltuieli.filter((c) => !["avion", "cazare", "masina"].includes(c.categorie)).map((c) => {
+      const cat = SAFE_CATS.find((x) => x.id === c.categorie) || SAFE_CATS[0] || { icon: "\u{1F4B3}", label: c.categorie };
+      const eur = toEUR(parseFloat(c.suma) || 0, c.moneda);
+      const mon = MONEDE.find((m) => m.code === c.moneda);
+      return /* @__PURE__ */ React.createElement("div", { key: c.id, style: calStyles.expenseItem, onClick: () => onEditCheltuiala(c) }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 16 } }, cat.icon), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("span", { style: calStyles.expenseCat }, cat.label), c.descriere && /* @__PURE__ */ React.createElement("span", { style: calStyles.expenseDesc }, " \xB7 ", c.descriere)), /* @__PURE__ */ React.createElement("div", { style: { textAlign: "right" } }, /* @__PURE__ */ React.createElement("div", { style: calStyles.expenseAmt }, formatEUR(eur)), c.moneda !== "EUR" && /* @__PURE__ */ React.createElement("div", { style: calStyles.expenseOrig }, mon == null ? void 0 : mon.symbol, c.suma)));
+    }), allCheltuieli.length > 0 && /* @__PURE__ */ React.createElement("div", { style: calStyles.totalBar }, /* @__PURE__ */ React.createElement("span", { style: { color: "#64748b", fontSize: 12 } }, t.dailyTotal), /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 800, fontSize: 14, color: "#0f172a" } }, formatEUR(total))), /* @__PURE__ */ React.createElement("div", { style: calStyles.notesSection }, /* @__PURE__ */ React.createElement("div", { style: calStyles.notesLabel }, t.notesLabel), /* @__PURE__ */ React.createElement(
+      "textarea",
+      {
+        style: calStyles.notesArea,
+        value: notaVal,
+        placeholder: t.notesPlaceholder,
+        onChange: (e) => setNotaVal(e.target.value),
+        onBlur: () => onNotaChange(notaVal),
+        onClick: (e) => e.stopPropagation()
+      }
+    ))));
+  }
+  const calStyles = {
+    summaryBar: {
+      display: "flex",
+      gap: 8,
+      marginBottom: 12,
+      padding: "10px 14px",
+      background: "#fff",
+      borderRadius: 12,
+      border: "1px solid #f1f5f9",
+      flexWrap: "wrap"
+    },
+    summaryItem: { fontSize: 12, color: "#475569", fontWeight: 600 },
+    dayRow: (isToday, isPast) => ({
+      background: "#fff",
+      borderRadius: 14,
+      marginBottom: 8,
+      border: isToday ? "2px solid #6366f1" : "1px solid #f1f5f9",
+      overflow: "hidden",
+      opacity: isPast && !isToday ? 0.75 : 1,
+      boxShadow: isToday ? "0 2px 12px rgba(99,102,241,0.15)" : "0 1px 3px rgba(0,0,0,0.04)"
+    }),
+    dayHeader: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: "12px 14px",
+      cursor: "pointer"
+    },
+    dayLeft: { display: "flex", alignItems: "center", gap: 10, flex: 1 },
+    dayNumBadge: (isToday, isPast) => ({
+      minWidth: 44,
+      textAlign: "center",
+      background: isToday ? "#6366f1" : isPast ? "#f1f5f9" : "#eff6ff",
+      color: isToday ? "#fff" : isPast ? "#94a3b8" : "#6366f1",
+      borderRadius: 8,
+      padding: "4px 6px",
+      fontSize: 10,
+      fontWeight: 800,
+      lineHeight: 1.3
+    }),
+    dayLabel: (isToday) => ({
+      fontSize: 13,
+      fontWeight: isToday ? 800 : 600,
+      color: isToday ? "#6366f1" : "#0f172a"
+    }),
+    badgeRow: { display: "flex", gap: 4, marginTop: 3, flexWrap: "wrap" },
+    locationPill: {
+      display: "inline-block",
+      fontSize: 11,
+      fontWeight: 700,
+      color: "#0369a1",
+      background: "#e0f2fe",
+      borderRadius: 6,
+      padding: "2px 7px",
+      marginTop: 3,
+      marginBottom: 2
+    },
+    badge: (color) => ({
+      fontSize: 10,
+      background: color + "18",
+      color,
+      borderRadius: 5,
+      padding: "1px 5px",
+      fontWeight: 700
+    }),
+    dayRight: { display: "flex", flexDirection: "column", alignItems: "flex-end", minWidth: 60 },
+    dayTotal: { fontSize: 14, fontWeight: 800, color: "#0f172a" },
+    dayBody: { borderTop: "1px solid #f1f5f9", padding: "10px 14px 14px" },
+    specialItem: (color) => ({
+      display: "flex",
+      alignItems: "flex-start",
+      gap: 10,
+      background: color + "0d",
+      borderLeft: `3px solid ${color}`,
+      borderRadius: "0 8px 8px 0",
+      padding: "8px 10px",
+      marginBottom: 6,
+      cursor: "pointer"
+    }),
+    specialDot: (color) => ({
+      width: 8,
+      height: 8,
+      borderRadius: "50%",
+      background: color,
+      marginTop: 4,
+      flexShrink: 0
+    }),
+    specialLabel: { fontSize: 12, fontWeight: 700, color: "#0f172a" },
+    specialSub: { fontSize: 11, color: "#64748b", marginTop: 2 },
+    editHint: { fontSize: 12, opacity: 0.4 },
+    expenseItem: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      padding: "7px 0",
+      borderBottom: "1px solid #f8fafc",
+      cursor: "pointer"
+    },
+    expenseCat: { fontSize: 12, fontWeight: 600, color: "#334155" },
+    expenseDesc: { fontSize: 12, color: "#94a3b8" },
+    expenseAmt: { fontSize: 13, fontWeight: 700, color: "#0f172a" },
+    expenseOrig: { fontSize: 10, color: "#94a3b8" },
+    totalBar: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginTop: 8,
+      paddingTop: 8,
+      borderTop: "1px solid #f1f5f9"
+    },
+    notesSection: { marginTop: 12 },
+    notesLabel: { fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 },
+    notesArea: {
+      width: "100%",
+      border: "1px solid #e2e8f0",
+      borderRadius: 10,
+      padding: "10px 12px",
+      fontSize: 13,
+      color: "#334155",
+      resize: "none",
+      minHeight: 72,
+      fontFamily: "inherit",
+      background: "#fafbff",
+      boxSizing: "border-box",
+      lineHeight: 1.5
+    }
+  };
+  function TabStatistici({ pieData, barData, filtered, totalFiltered, filterPeriod, setFilterPeriod, t }) {
+    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: styles.filterRow }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "date",
+        style: styles.dateInput,
+        placeholder: "De la",
+        value: filterPeriod.de_la,
+        onChange: (e) => setFilterPeriod((p) => ({ ...p, de_la: e.target.value }))
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "date",
+        style: styles.dateInput,
+        placeholder: "P\xE2n\u0103 la",
+        value: filterPeriod.pana_la,
+        onChange: (e) => setFilterPeriod((p) => ({ ...p, pana_la: e.target.value }))
+      }
+    )), /* @__PURE__ */ React.createElement("div", { style: styles.totalRow }, /* @__PURE__ */ React.createElement("span", { style: styles.totalLabel }, t.periodTotal), /* @__PURE__ */ React.createElement("span", { style: styles.totalValue }, formatEUR(totalFiltered))), pieData.length === 0 && /* @__PURE__ */ React.createElement("div", { style: styles.emptyState }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 48 } }, "\u{1F4CA}"), /* @__PURE__ */ React.createElement("div", { style: { color: "#94a3b8" } }, t.noCharts)), pieData.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: styles.chartCard }, /* @__PURE__ */ React.createElement("div", { style: styles.chartTitle }, t.distributionTitle), /* @__PURE__ */ React.createElement(ResponsiveContainer, { width: "100%", height: 220 }, /* @__PURE__ */ React.createElement(PieChart, null, /* @__PURE__ */ React.createElement(Pie, { data: pieData, cx: "50%", cy: "50%", outerRadius: 80, dataKey: "value", label: ({ name, percent }) => `${(percent * 100).toFixed(0)}%`, labelLine: false }, pieData.map((entry, i) => /* @__PURE__ */ React.createElement(Cell, { key: i, fill: entry.color }))), /* @__PURE__ */ React.createElement(Tooltip, { formatter: (v) => formatEUR(v) }), /* @__PURE__ */ React.createElement(Legend, { formatter: (v) => v })))), /* @__PURE__ */ React.createElement("div", { style: styles.chartCard }, /* @__PURE__ */ React.createElement("div", { style: styles.chartTitle }, t.categoriesTitle), /* @__PURE__ */ React.createElement(ResponsiveContainer, { width: "100%", height: 220 }, /* @__PURE__ */ React.createElement(BarChart, { data: barData, margin: { top: 5, right: 10, left: 0, bottom: 5 } }, /* @__PURE__ */ React.createElement(XAxis, { dataKey: "name", tick: { fontSize: 10 } }), /* @__PURE__ */ React.createElement(YAxis, { tick: { fontSize: 10 } }), /* @__PURE__ */ React.createElement(Tooltip, { formatter: (v) => formatEUR(v) }), /* @__PURE__ */ React.createElement(Bar, { dataKey: "EUR", radius: [4, 4, 0, 0] }, barData.map((entry, i) => /* @__PURE__ */ React.createElement(Cell, { key: i, fill: entry.fill })))))), /* @__PURE__ */ React.createElement("div", { style: styles.chartCard }, /* @__PURE__ */ React.createElement("div", { style: styles.chartTitle }, t.breakdownTitle), pieData.sort((a, b) => b.value - a.value).map((d) => /* @__PURE__ */ React.createElement("div", { key: d.name, style: styles.breakdownRow }, /* @__PURE__ */ React.createElement("span", { style: styles.breakdownIcon }, d.icon), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("div", { style: styles.breakdownLabel }, d.name), /* @__PURE__ */ React.createElement("div", { style: styles.breakdownBar }, /* @__PURE__ */ React.createElement("div", { style: { ...styles.breakdownFill, width: `${d.value / totalFiltered * 100}%`, background: d.color } }))), /* @__PURE__ */ React.createElement("div", { style: styles.breakdownAmt }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 700, fontSize: 13 } }, formatEUR(d.value)), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 11, color: "#94a3b8" } }, (d.value / totalFiltered * 100).toFixed(1), "%")))))));
+  }
+  function FormModal({ item, onSave, onClose, t: tProp, CATEGORII: CATprop }) {
+    const { t: tCtx, CATEGORII: CATctx } = useLang();
+    const t = tProp || tCtx;
+    const CATEGORII = CATprop && CATprop.length > 0 ? CATprop : CATctx && CATctx.length > 0 ? CATctx : getCATEGORII(t);
+    const [form, setForm] = useState({ ...item });
+    const [extra, setExtra] = useState(item.extra || {});
+    const cat = CATEGORII.find((c) => c.id === form.categorie) || CATEGORII[0];
+    const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+    const setEx = (k, v) => setExtra((e) => ({ ...e, [k]: v }));
+    useEffect(() => {
+      if (form.categorie === "avion" && !item.extra) setExtra(emptyAvion());
+      else if (form.categorie === "cazare" && !item.extra) setExtra(emptyCazare());
+      else if (form.categorie === "masina" && !item.extra) setExtra(emptyCar());
+      else if (!["avion", "cazare", "masina"].includes(form.categorie)) setExtra({});
+    }, [form.categorie]);
+    const handleSave = () => {
+      if (!form.suma || !form.data) return;
+      onSave({ ...form, extra: Object.keys(extra).length > 0 ? extra : void 0 });
+    };
+    const monedaObj = MONEDE.find((m) => m.code === form.moneda);
+    const eurPreview = toEUR(parseFloat(form.suma) || 0, form.moneda);
+    return /* @__PURE__ */ React.createElement("div", { style: styles.overlay, onClick: (e) => e.target === e.currentTarget && onClose() }, /* @__PURE__ */ React.createElement("div", { style: styles.modal }, /* @__PURE__ */ React.createElement("div", { style: styles.modalHeader }, /* @__PURE__ */ React.createElement("span", { style: styles.modalTitle }, cat.icon, " ", form.id === item.id && !item.suma ? t.newExpense : t.edit), /* @__PURE__ */ React.createElement("button", { style: styles.closeBtn, onClick: onClose }, "\u2715")), /* @__PURE__ */ React.createElement("div", { style: styles.formBody }, /* @__PURE__ */ React.createElement("div", { style: styles.catGrid }, CATEGORII.map((c) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: c.id,
+        style: styles.catBtn(form.categorie === c.id, c.color),
+        onClick: () => set("categorie", c.id)
+      },
+      /* @__PURE__ */ React.createElement("span", { style: { fontSize: 18 } }, c.icon),
+      /* @__PURE__ */ React.createElement("span", { style: { fontSize: 10, marginTop: 2 } }, c.label)
+    ))), /* @__PURE__ */ React.createElement("div", { style: styles.row }, /* @__PURE__ */ React.createElement("div", { style: { flex: 2 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.amount), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "number",
+        style: styles.input,
+        value: form.suma,
+        placeholder: "0.00",
+        onChange: (e) => set("suma", e.target.value)
+      }
+    )), /* @__PURE__ */ React.createElement("div", { style: { flex: 2 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.currency), /* @__PURE__ */ React.createElement("select", { style: styles.select, value: form.moneda, onChange: (e) => set("moneda", e.target.value) }, MONEDE.map((m) => /* @__PURE__ */ React.createElement("option", { key: m.code, value: m.code }, m.code, " (", m.symbol, ") \u2014 ", m.name))))), form.moneda !== "EUR" && form.suma && /* @__PURE__ */ React.createElement("div", { style: styles.eurHint }, "\u2248 ", formatEUR(eurPreview), " ", t.atCurrentRate), /* @__PURE__ */ React.createElement("div", { style: styles.row }, /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.date), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "date",
+        style: styles.input,
+        value: form.data,
+        onChange: (e) => set("data", e.target.value)
+      }
+    )), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.paymentMethod), /* @__PURE__ */ React.createElement("select", { style: styles.select, value: form.metoda, onChange: (e) => set("metoda", e.target.value) }, METODE_PLATA.map((m) => /* @__PURE__ */ React.createElement("option", { key: m }, m))))), /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.description), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        style: styles.input,
+        value: form.descriere,
+        placeholder: t.descriptionPlaceholder,
+        onChange: (e) => set("descriere", e.target.value)
+      }
+    ), form.categorie === "avion" && /* @__PURE__ */ React.createElement("div", { style: styles.extraSection }, /* @__PURE__ */ React.createElement("div", { style: styles.extraTitle }, t.flightDetails), /* @__PURE__ */ React.createElement("div", { style: styles.row }, /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.from), /* @__PURE__ */ React.createElement("input", { style: styles.input, value: extra.de_la || "", onChange: (e) => setEx("de_la", e.target.value) })), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.to), /* @__PURE__ */ React.createElement("input", { style: styles.input, value: extra.la || "", onChange: (e) => setEx("la", e.target.value) }))), /* @__PURE__ */ React.createElement("div", { style: styles.row }, /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.airline), /* @__PURE__ */ React.createElement("input", { style: styles.input, value: extra.companie || "", onChange: (e) => setEx("companie", e.target.value) })), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.flightNo), /* @__PURE__ */ React.createElement("input", { style: styles.input, value: extra.nr_zbor || "", onChange: (e) => setEx("nr_zbor", e.target.value) }))), /* @__PURE__ */ React.createElement("div", { style: styles.row }, /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.departureTime), /* @__PURE__ */ React.createElement("input", { type: "time", style: styles.input, value: extra.ora_plecare || "", onChange: (e) => setEx("ora_plecare", e.target.value) })), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.departureTerminal), /* @__PURE__ */ React.createElement("input", { style: styles.input, value: extra.terminal_plecare || "", onChange: (e) => setEx("terminal_plecare", e.target.value) }))), /* @__PURE__ */ React.createElement("div", { style: styles.row }, /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.arrivalTime), /* @__PURE__ */ React.createElement("input", { type: "time", style: styles.input, value: extra.ora_sosire || "", onChange: (e) => setEx("ora_sosire", e.target.value) })), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.arrivalTerminal), /* @__PURE__ */ React.createElement("input", { style: styles.input, value: extra.terminal_sosire || "", onChange: (e) => setEx("terminal_sosire", e.target.value) }))), /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.luggage), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        style: styles.input,
+        value: extra.bagaje || "",
+        placeholder: t.luggagePlaceholder,
+        onChange: (e) => setEx("bagaje", e.target.value)
+      }
+    )), form.categorie === "cazare" && /* @__PURE__ */ React.createElement("div", { style: styles.extraSection }, /* @__PURE__ */ React.createElement("div", { style: styles.extraTitle }, t.accommodationDetails), /* @__PURE__ */ React.createElement("div", { style: styles.row }, /* @__PURE__ */ React.createElement("div", { style: { flex: 2 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.cityDestination, " ", t.required), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        style: { ...styles.input, borderColor: extra.oras ? "#e2e8f0" : "#fbbf24" },
+        value: extra.oras || "",
+        placeholder: t.cityPlaceholder,
+        onChange: (e) => setEx("oras", e.target.value)
+      }
+    )), /* @__PURE__ */ React.createElement("div", { style: { flex: 2 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.accommodationType), /* @__PURE__ */ React.createElement("select", { style: styles.select, value: extra.tip || "", onChange: (e) => setEx("tip", e.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "" }, t.typeChoose), /* @__PURE__ */ React.createElement("option", { value: "hotel" }, t.typeHotel), /* @__PURE__ */ React.createElement("option", { value: "airbnb" }, t.typeAirbnb), /* @__PURE__ */ React.createElement("option", { value: "hostel" }, t.typeHostel), /* @__PURE__ */ React.createElement("option", { value: "homeexchange" }, t.typeHomeExchange), /* @__PURE__ */ React.createElement("option", { value: "prieteni" }, t.typeFriends), /* @__PURE__ */ React.createElement("option", { value: "camping" }, t.typeCamping), /* @__PURE__ */ React.createElement("option", { value: "alt" }, t.typeOther)))), (parseFloat(form.suma) === 0 || form.suma === "" || form.suma === "0") && /* @__PURE__ */ React.createElement("div", { style: { background: "#f0fdf4", border: "1px solid #86efac", borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "#15803d", marginBottom: 8 } }, t.freeAccommodation), /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.hotelName), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        style: styles.input,
+        value: extra.nume || "",
+        placeholder: t.hotelNamePlaceholder,
+        onChange: (e) => setEx("nume", e.target.value)
+      }
+    ), /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.address), /* @__PURE__ */ React.createElement("input", { style: styles.input, value: extra.adresa || "", onChange: (e) => setEx("adresa", e.target.value) }), /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.bookedVia), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        style: styles.input,
+        value: extra.rezervat_prin || "",
+        placeholder: t.bookedViaPlaceholder,
+        onChange: (e) => setEx("rezervat_prin", e.target.value)
+      }
+    ), /* @__PURE__ */ React.createElement("div", { style: styles.row }, /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.checkInDate), /* @__PURE__ */ React.createElement("input", { type: "date", style: styles.input, value: extra.checkin_data || "", onChange: (e) => setEx("checkin_data", e.target.value) })), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.checkInTime), /* @__PURE__ */ React.createElement("input", { type: "time", style: styles.input, value: extra.checkin_ora || "", onChange: (e) => setEx("checkin_ora", e.target.value) }))), /* @__PURE__ */ React.createElement("div", { style: styles.row }, /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.checkOutDate), /* @__PURE__ */ React.createElement("input", { type: "date", style: styles.input, value: extra.checkout_data || "", onChange: (e) => setEx("checkout_data", e.target.value) })), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.checkOutTime), /* @__PURE__ */ React.createElement("input", { type: "time", style: styles.input, value: extra.checkout_ora || "", onChange: (e) => setEx("checkout_ora", e.target.value) })))), form.categorie === "masina" && /* @__PURE__ */ React.createElement("div", { style: styles.extraSection }, /* @__PURE__ */ React.createElement("div", { style: styles.extraTitle }, t.carDetails), /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.company), /* @__PURE__ */ React.createElement("input", { style: styles.input, value: extra.companie || "", onChange: (e) => setEx("companie", e.target.value) }), /* @__PURE__ */ React.createElement("div", { style: styles.row }, /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.pickupDate), /* @__PURE__ */ React.createElement("input", { type: "date", style: styles.input, value: extra.pickup_data || "", onChange: (e) => setEx("pickup_data", e.target.value) })), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.pickupTime), /* @__PURE__ */ React.createElement("input", { type: "time", style: styles.input, value: extra.pickup_ora || "", onChange: (e) => setEx("pickup_ora", e.target.value) }))), /* @__PURE__ */ React.createElement("div", { style: styles.row }, /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.dropoffDate), /* @__PURE__ */ React.createElement("input", { type: "date", style: styles.input, value: extra.dropoff_data || "", onChange: (e) => setEx("dropoff_data", e.target.value) })), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("label", { style: styles.label }, t.dropoffTime), /* @__PURE__ */ React.createElement("input", { type: "time", style: styles.input, value: extra.dropoff_ora || "", onChange: (e) => setEx("dropoff_ora", e.target.value) })))), /* @__PURE__ */ React.createElement("button", { style: styles.btnSave, onClick: handleSave }, t.save))));
+  }
+  const styles = {
+    app: (landscape) => ({
+      fontFamily: "'Nunito', 'Segoe UI', sans-serif",
+      background: "#f8fafc",
+      minHeight: "100vh",
+      maxWidth: landscape ? "none" : 480,
+      margin: "0 auto",
+      boxShadow: "0 0 40px rgba(0,0,0,0.08)"
+    }),
+    header: {
+      background: "#fff",
+      padding: "10px 14px 8px",
+      display: "flex",
+      flexDirection: "column",
+      borderBottom: "1px solid #f1f5f9",
+      position: "sticky",
+      top: 0,
+      zIndex: 10,
+      gap: 6
+    },
+    headerRow1: { display: "flex", alignItems: "center", gap: 8 },
+    headerRow2: { display: "flex", alignItems: "center", gap: 6, justifyContent: "flex-end" },
+    logo: { fontSize: 22, flexShrink: 0 },
+    appTitle: { fontWeight: 800, fontSize: 16, color: "#0f172a", letterSpacing: "-0.3px" },
+    appSub: { fontSize: 11, color: "#94a3b8" },
+    iconBtn: {
+      background: "none",
+      border: "1px solid #e2e8f0",
+      borderRadius: 8,
+      padding: "4px 7px",
+      cursor: "pointer",
+      fontSize: 15,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    },
+    langSwitcher: { display: "flex", gap: 2, alignItems: "center" },
+    langBtn: (active) => ({
+      background: active ? "#6366f1" : "none",
+      border: active ? "none" : "1px solid #e2e8f0",
+      borderRadius: 7,
+      padding: "2px 5px",
+      cursor: "pointer",
+      fontSize: 14,
+      opacity: active ? 1 : 0.55,
+      transition: "all 0.15s"
+    }),
+    budgetBadge: {
+      background: "#f8fafc",
+      border: "1px solid #e2e8f0",
+      borderRadius: 10,
+      padding: "4px 10px",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      cursor: "pointer",
+      gap: 1
+    },
+    budgetSection: { background: "#fff", padding: "12px 20px 16px", borderBottom: "1px solid #f1f5f9" },
+    budgetRow: { display: "flex", justifyContent: "space-between", marginBottom: 8 },
+    budgetLabel: { fontSize: 12, color: "#475569" },
+    progressBar: { height: 8, background: "#f1f5f9", borderRadius: 99, overflow: "hidden" },
+    progressFill: (pct) => ({
+      height: "100%",
+      width: `${pct}%`,
+      background: pct > 90 ? "#ef4444" : pct > 70 ? "#f59e0b" : "#10b981",
+      borderRadius: 99,
+      transition: "width 0.4s ease"
+    }),
+    inlineEdit: { marginTop: 8, display: "flex", alignItems: "center", gap: 8 },
+    inlineInput: { border: "1px solid #e2e8f0", borderRadius: 8, padding: "4px 10px", fontSize: 14, width: 100 },
+    tabs: {
+      display: "flex",
+      background: "#fff",
+      borderBottom: "1px solid #f1f5f9",
+      position: "sticky",
+      top: 92,
+      zIndex: 9
+    },
+    tab: (active) => ({
+      flex: 1,
+      padding: "12px 4px",
+      border: "none",
+      background: "none",
+      cursor: "pointer",
+      fontSize: 12,
+      fontWeight: active ? 700 : 500,
+      color: active ? "#6366f1" : "#64748b",
+      borderBottom: active ? "2px solid #6366f1" : "2px solid transparent",
+      transition: "all 0.2s"
+    }),
+    content: { padding: "16px 16px 40px" },
+    actionRow: { display: "flex", gap: 10, marginBottom: 12 },
+    btnPrimary: {
+      flex: 1,
+      background: "#6366f1",
+      color: "#fff",
+      border: "none",
+      borderRadius: 12,
+      padding: "12px",
+      fontSize: 14,
+      fontWeight: 700,
+      cursor: "pointer"
+    },
+    btnVoice: {
+      flex: 1,
+      background: "#fff",
+      color: "#6366f1",
+      border: "2px solid #e0e7ff",
+      borderRadius: 12,
+      padding: "12px",
+      fontSize: 14,
+      fontWeight: 700,
+      cursor: "pointer",
+      transition: "all 0.2s"
+    },
+    btnVoiceActive: { background: "#fee2e2", borderColor: "#fca5a5", color: "#ef4444" },
+    transcriptBubble: {
+      background: "#eff6ff",
+      borderRadius: 10,
+      padding: "10px 14px",
+      fontSize: 13,
+      color: "#3730a3",
+      marginBottom: 10,
+      fontStyle: "italic"
+    },
+    filterCol: { display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 },
+    filterDateRow: { display: "flex", gap: 6 },
+    dateWrap: {
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flex: 1,
+      border: "1px solid #e2e8f0",
+      borderRadius: 8,
+      padding: "5px 8px",
+      background: "#fff",
+      minWidth: 0
+    },
+    dateWrapLabel: { fontSize: 11, color: "#6366f1", fontWeight: 700, flexShrink: 0, whiteSpace: "nowrap" },
+    dateClear: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontSize: 11,
+      color: "#94a3b8",
+      padding: "0 2px",
+      flexShrink: 0
+    },
+    select: {
+      border: "1px solid #e2e8f0",
+      borderRadius: 8,
+      padding: "7px 10px",
+      fontSize: 12,
+      background: "#fff",
+      color: "#334155",
+      flex: 1,
+      minWidth: 120
+    },
+    dateInput: {
+      border: "none",
+      padding: "0",
+      fontSize: 12,
+      background: "transparent",
+      color: "#334155",
+      flex: 1,
+      minWidth: 0,
+      outline: "none"
+    },
+    totalRow: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "8px 0",
+      borderBottom: "1px solid #f1f5f9",
+      marginBottom: 12
+    },
+    totalLabel: { fontSize: 12, color: "#64748b" },
+    totalValue: { fontWeight: 800, fontSize: 16, color: "#0f172a" },
+    emptyState: {
+      textAlign: "center",
+      padding: "48px 20px",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 8
+    },
+    card: {
+      background: "#fff",
+      borderRadius: 14,
+      marginBottom: 10,
+      boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+      display: "flex",
+      overflow: "hidden",
+      transition: "box-shadow 0.2s"
+    },
+    cardAccent: { width: 4, flexShrink: 0 },
+    cardMain: { flex: 1, padding: "12px 10px 12px 12px" },
+    cardHeader: { display: "flex", alignItems: "flex-start", gap: 10 },
+    cardIcon: { fontSize: 22, marginTop: 1 },
+    cardCat: { fontWeight: 700, fontSize: 13, color: "#0f172a" },
+    cardDesc: { fontSize: 12, color: "#64748b", marginTop: 2 },
+    cardExtra: { fontSize: 11, color: "#94a3b8", marginTop: 2 },
+    cardRight: { textAlign: "right", minWidth: 80 },
+    cardAmount: { fontWeight: 800, fontSize: 15, color: "#0f172a" },
+    cardAmountOrig: { fontSize: 11, color: "#94a3b8" },
+    cardMeta: { fontSize: 10, color: "#94a3b8", marginTop: 2 },
+    cardActions: {
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      padding: "0 8px",
+      gap: 4
+    },
+    btnEdit: { background: "none", border: "none", cursor: "pointer", fontSize: 14, padding: "4px" },
+    btnDel: { background: "none", border: "none", cursor: "pointer", fontSize: 14, padding: "4px" },
+    calGrid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fill, minmax(80px, 1fr))",
+      gap: 8,
+      marginBottom: 16
+    },
+    calDay: (active) => ({
+      background: active ? "#6366f1" : "#fff",
+      color: active ? "#fff" : "#0f172a",
+      border: active ? "none" : "1px solid #e2e8f0",
+      borderRadius: 12,
+      padding: "8px 4px",
+      cursor: "pointer",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 2,
+      transition: "all 0.15s"
+    }),
+    calDate: { fontWeight: 700, fontSize: 13 },
+    calBadges: { fontSize: 12 },
+    calTotal: { fontSize: 11, fontWeight: 600 },
+    calDetail: {
+      background: "#fff",
+      borderRadius: 16,
+      padding: "16px",
+      boxShadow: "0 1px 4px rgba(0,0,0,0.06)"
+    },
+    calDetailTitle: { fontWeight: 800, fontSize: 16, color: "#0f172a", marginBottom: 12 },
+    notiteLabel: { fontSize: 12, fontWeight: 700, color: "#475569", marginBottom: 6, marginTop: 12 },
+    notiteArea: {
+      width: "100%",
+      border: "1px solid #e2e8f0",
+      borderRadius: 10,
+      padding: "10px",
+      fontSize: 13,
+      color: "#334155",
+      resize: "vertical",
+      minHeight: 80,
+      fontFamily: "'Nunito', sans-serif",
+      boxSizing: "border-box"
+    },
+    calItem: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "8px 10px",
+      background: "#f8fafc",
+      borderRadius: 10,
+      marginBottom: 6,
+      cursor: "pointer",
+      fontSize: 13
+    },
+    chartCard: {
+      background: "#fff",
+      borderRadius: 14,
+      padding: "16px",
+      boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+      marginBottom: 12
+    },
+    chartTitle: { fontWeight: 700, fontSize: 14, color: "#0f172a", marginBottom: 12 },
+    breakdownRow: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      marginBottom: 12
+    },
+    breakdownIcon: { fontSize: 20, minWidth: 24 },
+    breakdownLabel: { fontSize: 12, fontWeight: 600, color: "#334155", marginBottom: 3 },
+    breakdownBar: { height: 6, background: "#f1f5f9", borderRadius: 99, overflow: "hidden" },
+    breakdownFill: { height: "100%", borderRadius: 99, transition: "width 0.5s ease" },
+    breakdownAmt: { textAlign: "right", minWidth: 70 },
+    overlay: {
+      position: "fixed",
+      inset: 0,
+      background: "rgba(15,23,42,0.5)",
+      display: "flex",
+      alignItems: "flex-end",
+      justifyContent: "center",
+      zIndex: 100,
+      backdropFilter: "blur(2px)"
+    },
+    modal: {
+      background: "#fff",
+      borderRadius: "20px 20px 0 0",
+      width: "100%",
+      maxWidth: 540,
+      maxHeight: "92vh",
+      overflowY: "auto",
+      boxShadow: "0 -8px 40px rgba(0,0,0,0.15)"
+    },
+    modalHeader: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "18px 20px 12px",
+      borderBottom: "1px solid #f1f5f9",
+      position: "sticky",
+      top: 0,
+      background: "#fff",
+      zIndex: 1
+    },
+    modalTitle: { fontWeight: 800, fontSize: 17, color: "#0f172a" },
+    closeBtn: {
+      background: "#f1f5f9",
+      border: "none",
+      borderRadius: 50,
+      width: 32,
+      height: 32,
+      cursor: "pointer",
+      fontSize: 16,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    },
+    formBody: { padding: "16px 20px 32px" },
+    catGrid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(6, 1fr)",
+      gap: 6,
+      marginBottom: 16
+    },
+    catBtn: (active, color) => ({
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      padding: "8px 4px",
+      border: active ? `2px solid ${color}` : "1px solid #e2e8f0",
+      borderRadius: 10,
+      background: active ? color + "18" : "#fff",
+      cursor: "pointer",
+      transition: "all 0.15s",
+      gap: 2
+    }),
+    row: { display: "flex", gap: 10, marginBottom: 10 },
+    label: {
+      display: "block",
+      fontSize: 11,
+      fontWeight: 700,
+      color: "#64748b",
+      textTransform: "uppercase",
+      letterSpacing: "0.5px",
+      marginBottom: 4
+    },
+    input: {
+      width: "100%",
+      border: "1px solid #e2e8f0",
+      borderRadius: 10,
+      padding: "10px 12px",
+      fontSize: 14,
+      color: "#0f172a",
+      boxSizing: "border-box",
+      background: "#fff",
+      outline: "none"
+    },
+    eurHint: {
+      fontSize: 12,
+      color: "#6366f1",
+      background: "#eff6ff",
+      borderRadius: 8,
+      padding: "6px 10px",
+      marginBottom: 10,
+      fontWeight: 600
+    },
+    extraSection: {
+      background: "#f8fafc",
+      borderRadius: 12,
+      padding: "14px",
+      marginTop: 10,
+      marginBottom: 10,
+      border: "1px solid #f1f5f9"
+    },
+    extraTitle: { fontWeight: 800, fontSize: 13, color: "#475569", marginBottom: 12 },
+    btnSave: {
+      width: "100%",
+      background: "#6366f1",
+      color: "#fff",
+      border: "none",
+      borderRadius: 14,
+      padding: "14px",
+      fontSize: 15,
+      fontWeight: 800,
+      cursor: "pointer",
+      marginTop: 12,
+      letterSpacing: "-0.3px"
+    }
+  };
+  const root = ReactDOM.createRoot(document.getElementById("root"));
+  root.render(React.createElement(App));
+})();
+
+});
+</script>
+</body>
+</html>
